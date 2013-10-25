@@ -34,4 +34,4 @@ DEPENDENCIES
   i18n (>= 0.5.0)
   rake (~> 0.8.7)
   rspec (= 2.1.0)
-  yajl-ruby (~> 0.8.1)
+  yajl-ruby (>= 0.8.1)
