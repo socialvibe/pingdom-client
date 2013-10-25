@@ -12,15 +12,23 @@ module Pingdom
       
       @connection = Faraday::Connection.new(:url => "https://api/pingdom.com/api/2.0/") do |builder|
         builder.url_prefix = "https://api.pingdom.com/api/2.0"
+
+        #No such adapter anymore - billy 10/24/13
+        #builder.adapter :logger, @options[:logger]
         
-        builder.adapter :logger, @options[:logger]
-        
-        builder.adapter @options[:http_driver]
+        # => builder.adapter @options[:http_driver]
         
         # builder.use Gzip # TODO: write GZip response handler, add Accept-Encoding: gzip header
-        builder.response :yajl
-        builder.use Tinder::FaradayResponse::WithIndifferentAccess
+        builder.response :logger if options[:logger]
         
+        builder.adapter Faraday.default_adapter
+        builder.request  :url_encoded
+        
+
+        builder.use Faraday::Response::Mashify
+        builder.use Faraday::Response::ParseJson
+
+        builder.headers = {'App-Key' => @options[:key], 'Host' => 'api.pingdom.com'}
         builder.basic_auth @options[:username], @options[:password]
       end
     end
@@ -36,7 +44,8 @@ module Pingdom
     end
     
     def get(uri, params = {}, &block)
-      response = @connection.get(@connection.build_url(uri, prepare_params(params)), "App-Key" => @options[:key], &block)
+      response = @connection.get(@connection.build_url(uri, prepare_params(params)), 
+        &block)
       update_limits!(response.headers['req-limit-short'], response.headers['req-limit-long'])
       response
     end

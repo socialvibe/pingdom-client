@@ -4,7 +4,7 @@ module Pingdom
   class Check < Base
     def self.parse(client, response)
       checks = super
-      Array.wrap(checks[:checks] || checks[:check]).map do |check|
+      Array.wrap(checks[:checks] || checks[:check] || checks['check']).map do |check|
         new(client, response, check)
       end
     end
